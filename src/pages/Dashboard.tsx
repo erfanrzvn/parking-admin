@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import type { Schema } from '../../../../shared/amplify/data/resource';
+import type { Schema } from '../amplify/data/resource';
 import './Dashboard.css';
 
 const client = generateClient<Schema>();
