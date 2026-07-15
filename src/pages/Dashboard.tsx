@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { generateClient } from 'aws-amplify/data';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 import type { Schema } from '../amplify/data/resource';
@@ -18,6 +19,7 @@ interface Stats {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats>({
     buildingName: '',
     buildingCode: '',
@@ -187,15 +189,15 @@ export default function Dashboard() {
       <div className="quick-actions">
         <h2>⚡ Quick Actions</h2>
         <div className="action-buttons">
-          <button className="action-btn primary">
+          <button className="action-btn primary" onClick={() => navigate('/units')}>
             <span className="action-icon">🏠</span>
             <span className="action-label">Add Unit</span>
           </button>
-          <button className="action-btn secondary">
+          <button className="action-btn secondary" onClick={() => navigate('/parkings')}>
             <span className="action-icon">🅿️</span>
             <span className="action-label">Add Parking</span>
           </button>
-          <button className="action-btn secondary">
+          <button className="action-btn secondary" onClick={() => navigate('/reservations')}>
             <span className="action-icon">📅</span>
             <span className="action-label">View Reservations</span>
           </button>
