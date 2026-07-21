@@ -3,10 +3,10 @@ import { signIn, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
 import './Login.css';
 
 interface LoginProps {
-  onSuccess: (user: any) => void;
+  onSignIn: () => void;
 }
 
-export default function Login({ onSuccess }: LoginProps) {
+export default function Login({ onSignIn }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -35,7 +35,7 @@ export default function Login({ onSuccess }: LoginProps) {
       const user = await getCurrentUser();
       console.log('👤 Current user:', user);
       
-      onSuccess(user);
+      onSignIn();
     } catch (err: any) {
       console.error('❌ Sign in error:', err);
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -47,7 +47,7 @@ export default function Login({ onSuccess }: LoginProps) {
   return (
     <div className="login-container">
       <div className="login-box">
-        <h1>Super Admin Login</h1>
+        <h1>Building Admin Login</h1>
         <p className="login-subtitle">Parking Reservation System</p>
 
         {error && (
