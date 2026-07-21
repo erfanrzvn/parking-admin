@@ -11,8 +11,12 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
-  server: {
-    port: 3002,
+  build: {
+    sourcemap: true,
+    minify: 'esbuild',
+    target: 'es2020',
   },
-  assetsInclude: ['**/*.json'],
+  server: {
+    port: 3001,
+  },
 });
