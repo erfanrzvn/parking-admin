@@ -51,14 +51,19 @@ export default function Parkings() {
       }
 
       // Get Admin record to check assigned parkings
+      console.log('🔍 Loading admin record for email:', userEmail);
       const adminData = await client.models.Admin.list({
         filter: { email: { eq: userEmail } }
       });
+
+      console.log('📊 Admin data from DynamoDB:', adminData.data);
 
       let assignedParkingIds: string[] = [];
       if (adminData.data[0] && adminData.data[0].assignedParkingIds) {
         assignedParkingIds = adminData.data[0].assignedParkingIds;
       }
+
+      console.log('🅿️ Assigned parking IDs:', assignedParkingIds);
 
       // Load parkings - filter by building AND assigned parkings
       const parkingsData = await client.models.Parking.list({
@@ -67,10 +72,14 @@ export default function Parkings() {
 
       // Filter to only show assigned parkings
       let filteredParkings = parkingsData.data as Parking[];
+      console.log('📦 All parkings for building:', filteredParkings.length);
+      
       if (assignedParkingIds.length > 0) {
         filteredParkings = filteredParkings.filter(p => assignedParkingIds.includes(p.id));
+        console.log('✅ Filtered to assigned parkings:', filteredParkings.length);
       } else {
         // If no parkings assigned, show empty list
+        console.log('⚠️ No parkings assigned to this admin');
         filteredParkings = [];
       }
 
