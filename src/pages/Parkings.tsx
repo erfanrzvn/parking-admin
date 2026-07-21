@@ -55,10 +55,14 @@ export default function Parkings() {
         filter: { email: { eq: userEmail } }
       });
 
+      console.log('🔍 Admin raw data:', JSON.stringify(adminData.data, null, 2));
+
       let assignedParkingIds: string[] = [];
       if (adminData.data[0] && adminData.data[0].assignedParkingIds) {
         assignedParkingIds = adminData.data[0].assignedParkingIds;
       }
+      
+      console.log('🅿️ Extracted assignedParkingIds:', assignedParkingIds);
 
       // Load parkings - filter by building AND assigned parkings
       const parkingsData = await client.models.Parking.list({
