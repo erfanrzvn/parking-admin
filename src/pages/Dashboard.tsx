@@ -42,9 +42,12 @@ export default function Dashboard() {
     try {
       // Get user's building code from custom attributes
       const userAttributes = await fetchUserAttributes();
+      console.log('📋 User attributes:', userAttributes);
+      
       const userBuildingCode = userAttributes['custom:buildingCode'] || '';
       
       if (!userBuildingCode) {
+        console.error('❌ No buildingCode found in user attributes');
         alert('خطا: کد ساختمان برای کاربر تعریف نشده است');
         setLoading(false);
         return;
