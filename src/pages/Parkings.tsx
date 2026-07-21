@@ -3,6 +3,7 @@ import { generateClient } from 'aws-amplify/data';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 import type { Schema } from '../amplify/data/resource';
 import type { Parking } from '../types';
+import ParkingSpots from './ParkingSpots';
 import './Parkings.css';
 
 const client = generateClient<Schema>();
@@ -12,6 +13,7 @@ export default function Parkings() {
   const [loading, setLoading] = useState(true);
   const [buildingCode, setBuildingCode] = useState<string>('');
   const [buildingName, setBuildingName] = useState<string>('');
+  const [selectedParking, setSelectedParking] = useState<Parking | null>(null);
 
   useEffect(() => {
     loadData();
@@ -111,6 +113,18 @@ export default function Parkings() {
     p.parkingName?.toLowerCase().includes('guest')
   );
 
+  // If a parking is selected, show Spots page
+  if (selectedParking) {
+    return (
+      <ParkingSpots
+        parkingId={selectedParking.id}
+        parkingName={selectedParking.parkingName || ''}
+        parkingNo={selectedParking.parkingNo}
+        onBack={() => setSelectedParking(null)}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div className="page-loading">
@@ -207,8 +221,16 @@ export default function Parkings() {
                   </div>
 
                   {/* Removed Edit and Delete buttons - Admin can only view */}
+                  <div className="parking-actions">
+                    <button
+                      className="btn-primary"
+                      onClick={() => setSelectedParking(parking)}
+                    >
+                      🅿️ Manage Spots
+                    </button>
+                  </div>
                   <div className="parking-info">
-                    <small>ℹ️ Read-only: Only Super Admin can modify parkings</small>
+                    <small>ℹ️ Click "Manage Spots" to add/edit parking spots</small>
                   </div>
                 </div>
               );
