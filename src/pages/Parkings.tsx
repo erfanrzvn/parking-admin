@@ -31,6 +31,7 @@ export default function Parkings() {
     try {
       const userAttributes = await fetchUserAttributes();
       const userBuildingCode = userAttributes['custom:buildingCode'] || '';
+      const userEmail = userAttributes['email'] || '';
       
       if (!userBuildingCode) {
         alert('خطا: کد ساختمان برای کاربر تعریف نشده است');
@@ -49,11 +50,31 @@ export default function Parkings() {
         setBuildingNo(buildingsData.data[0].buildingNo);
       }
 
-      // Load parkings for this building only
+      // Get Admin record to check assigned parkings
+      const adminData = await client.models.Admin.list({
+        filter: { email: { eq: userEmail } }
+      });
+
+      let assignedParkingIds: string[] = [];
+      if (adminData.data[0] && adminData.data[0].assignedParkingIds) {
+        assignedParkingIds = adminData.data[0].assignedParkingIds;
+      }
+
+      // Load parkings - filter by building AND assigned parkings
       const parkingsData = await client.models.Parking.list({
         filter: { buildingCode: { eq: userBuildingCode } }
       });
-      setParkings(parkingsData.data as Parking[]);
+
+      // Filter to only show assigned parkings
+      let filteredParkings = parkingsData.data as Parking[];
+      if (assignedParkingIds.length > 0) {
+        filteredParkings = filteredParkings.filter(p => assignedParkingIds.includes(p.id));
+      } else {
+        // If no parkings assigned, show empty list
+        filteredParkings = [];
+      }
+
+      setParkings(filteredParkings);
     } catch (error) {
       console.error('Error loading data:', error);
       alert('خطا در بارگذاری اطلاعات');

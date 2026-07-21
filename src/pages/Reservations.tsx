@@ -23,6 +23,7 @@ export default function Reservations() {
     try {
       const userAttributes = await fetchUserAttributes();
       const userBuildingCode = userAttributes['custom:buildingCode'] || '';
+      const userEmail = userAttributes['email'] || '';
       
       if (!userBuildingCode) {
         alert('خطا: کد ساختمان برای کاربر تعریف نشده است');
@@ -40,13 +41,32 @@ export default function Reservations() {
         setBuildingName(buildingsData.data[0].buildingName);
       }
 
-      // Get parkings for this building
+      // Get Admin record to check assigned parkings
+      const adminData = await client.models.Admin.list({
+        filter: { email: { eq: userEmail } }
+      });
+
+      let assignedParkingIds: string[] = [];
+      if (adminData.data[0] && adminData.data[0].assignedParkingIds) {
+        assignedParkingIds = adminData.data[0].assignedParkingIds;
+      }
+
+      // Get parkings for this building - filtered by assigned parkings
       const parkingsData = await client.models.Parking.list({
         filter: { buildingCode: { eq: userBuildingCode } }
       });
-      const buildingParkingNos = parkingsData.data.map(p => p.parkingNo);
 
-      // Get all reservations and filter by building parkings
+      // Filter to only assigned parkings
+      let assignedParkings = parkingsData.data;
+      if (assignedParkingIds.length > 0) {
+        assignedParkings = assignedParkings.filter(p => assignedParkingIds.includes(p.id));
+      } else {
+        assignedParkings = [];
+      }
+
+      const buildingParkingNos = assignedParkings.map(p => p.parkingNo);
+
+      // Get all reservations and filter by assigned parkings only
       const { data } = await client.models.Reserving.list();
       const buildingReservations = (data as Reserving[]).filter(r =>
         buildingParkingNos.includes(r.parkingNo)
