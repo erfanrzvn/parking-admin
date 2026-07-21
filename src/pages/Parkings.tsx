@@ -69,7 +69,7 @@ export default function Parkings() {
             'Authorization': authToken,
           },
           body: JSON.stringify({
-            query: `query GetAdmin($email: AWSEmail!) {
+            query: `query GetAdmin($email: String!) {
               listAdmins(filter: {email: {eq: $email}}) {
                 items {
                   id
