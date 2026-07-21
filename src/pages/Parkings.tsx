@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import type { Schema } from '../schema';
+import type { Schema } from '../amplify/data/resource';
 import type { Parking } from '../types';
 import './Parkings.css';
 
@@ -329,4 +329,5 @@ export default function Parkings() {
     </div>
   );
 }
+
 
