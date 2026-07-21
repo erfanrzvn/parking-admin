@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import type { Schema } from '../schema';
 import type { Parking } from '../types';
 import ParkingSpots from './ParkingSpots';
 import './Parkings.css';
 
-const client = generateClient<Schema>();
+const client = generateClient();
 
 export default function Parkings() {
   const [parkings, setParkings] = useState<Parking[]>([]);

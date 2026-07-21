@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '../schema';
 import './ParkingSpots.css';
 
-const client = generateClient<Schema>();
+const client = generateClient();
 
 interface ParkingSpot {
   id: string;
