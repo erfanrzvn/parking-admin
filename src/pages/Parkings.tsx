@@ -50,16 +50,45 @@ export default function Parkings() {
         setBuildingNo(buildingsData.data[0].buildingNo);
       }
 
-      // Get Admin record to check assigned parkings
-      const adminData = await client.models.Admin.list({
-        filter: { email: { eq: userEmail } }
-      });
-
-      console.log('🔍 Admin raw data:', JSON.stringify(adminData.data, null, 2));
-
+      // Get Admin record to check assigned parkings using raw GraphQL
       let assignedParkingIds: string[] = [];
-      if (adminData.data[0] && adminData.data[0].assignedParkingIds) {
-        assignedParkingIds = adminData.data[0].assignedParkingIds;
+      
+      try {
+        const { fetchAuthSession } = await import('aws-amplify/auth');
+        const session = await fetchAuthSession();
+        const authToken = session.tokens?.idToken?.toString();
+        
+        if (!authToken) {
+          throw new Error('No auth token');
+        }
+
+        const response = await fetch('https://dp457mgtrvdkfod6o6mmhpoy74.appsync-api.ca-central-1.amazonaws.com/graphql', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authToken,
+          },
+          body: JSON.stringify({
+            query: `query GetAdmin($email: AWSEmail!) {
+              listAdmins(filter: {email: {eq: $email}}) {
+                items {
+                  id
+                  assignedParkingIds
+                }
+              }
+            }`,
+            variables: { email: userEmail }
+          }),
+        });
+
+        const result = await response.json();
+        console.log('🔍 GraphQL response:', JSON.stringify(result, null, 2));
+        
+        if (result.data?.listAdmins?.items?.[0]?.assignedParkingIds) {
+          assignedParkingIds = result.data.listAdmins.items[0].assignedParkingIds;
+        }
+      } catch (err) {
+        console.error('❌ Error fetching admin:', err);
       }
       
       console.log('🅿️ Extracted assignedParkingIds:', assignedParkingIds);
