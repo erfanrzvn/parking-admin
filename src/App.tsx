@@ -1,31 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import './App.css';
+import './amplify-config'; // Import config BEFORE anything else
 import Navigation from './components/Navigation';
 import Dashboard from './pages/Dashboard';
 import Units from './pages/Units';
 import Parkings from './pages/Parkings';
 import Reservations from './pages/Reservations';
-import { Amplify } from 'aws-amplify';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [isConfigured, setIsConfigured] = useState(false);
-
-  useEffect(() => {
-    // Configure Amplify on component mount
-    fetch('/amplify_outputs.json')
-      .then(res => res.json())
-      .then(config => {
-        Amplify.configure(config);
-        setIsConfigured(true);
-        console.log('✅ Amplify configured successfully');
-      })
-      .catch(err => {
-        console.error('❌ Failed to load amplify_outputs.json:', err);
-      });
-  }, []);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -41,14 +26,6 @@ function App() {
         return <Dashboard />;
     }
   };
-
-  if (!isConfigured) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '18px' }}>
-        <div>⏳ Loading configuration...</div>
-      </div>
-    );
-  }
 
   return (
     <Authenticator
