@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import type { Schema } from '../amplify/data/resource';
+import type { Schema } from '../schema';
 import type { Reserving } from '../types';
 import './Reservations.css';
 
@@ -255,3 +255,4 @@ export default function Reservations() {
     </div>
   );
 }
+

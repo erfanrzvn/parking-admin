@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '../amplify/data/resource';
+import { type Schema } from '../schema';
 import './Dashboard.css';
 
 const client = generateClient<Schema>();
@@ -95,3 +95,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

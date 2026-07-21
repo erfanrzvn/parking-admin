@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import { fetchUserAttributes } from 'aws-amplify/auth';
-import type { Schema } from '../amplify/data/resource';
+import type { Schema } from '../schema';
 import type { UnitInfo } from '../types';
 import './Units.css';
 
@@ -330,3 +330,4 @@ export default function Units() {
     </div>
   );
 }
+
