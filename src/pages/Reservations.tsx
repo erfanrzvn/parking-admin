@@ -41,20 +41,65 @@ export default function Reservations() {
         setBuildingName(buildingsData.data[0].buildingName);
       }
 
-      // Get Admin record to check assigned parkings
+      // Get Admin record to check assigned parkings - using raw GraphQL to bypass cache
       console.log('🔍 Loading admin record for email:', userEmail);
-      const adminData = await client.models.Admin.list({
-        filter: { email: { eq: userEmail } }
-      });
-
-      console.log('📊 Admin data from DynamoDB:', adminData.data);
-
+      
       let assignedParkingIds: string[] = [];
-      if (adminData.data[0] && adminData.data[0].assignedParkingIds) {
-        assignedParkingIds = adminData.data[0].assignedParkingIds;
-      }
+      
+      try {
+        const { fetchAuthSession } = await import('aws-amplify/auth');
+        const session = await fetchAuthSession();
+        const authToken = session.tokens?.idToken?.toString();
+        
+        if (!authToken) {
+          throw new Error('No auth token available');
+        }
 
-      console.log('🅿️ Assigned parking IDs:', assignedParkingIds);
+        const apiEndpoint = 'https://dp457mgtrvdkfod6o6mmhpoy74.appsync-api.ca-central-1.amazonaws.com/graphql';
+        
+        const query = `
+          query ListAdmins($filter: ModelAdminFilterInput) {
+            listAdmins(filter: $filter) {
+              items {
+                id
+                email
+                assignedParkingIds
+              }
+            }
+          }
+        `;
+        
+        const variables = {
+          filter: {
+            email: { eq: userEmail }
+          }
+        };
+
+        const response = await fetch(apiEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authToken,
+            'x-amz-user-agent': 'aws-amplify',
+          },
+          body: JSON.stringify({
+            query,
+            variables,
+          }),
+        });
+
+        const result = await response.json();
+        console.log('📊 GraphQL raw result:', result);
+        
+        if (result.data?.listAdmins?.items?.[0]) {
+          assignedParkingIds = result.data.listAdmins.items[0].assignedParkingIds || [];
+          console.log('🅿️ Assigned parking IDs from GraphQL:', assignedParkingIds);
+        } else {
+          console.warn('⚠️ No admin record found for email:', userEmail);
+        }
+      } catch (graphqlError) {
+        console.error('❌ Error fetching admin via GraphQL:', graphqlError);
+      }
 
       // Get parkings for this building - filtered by assigned parkings
       const parkingsData = await client.models.Parking.list({
