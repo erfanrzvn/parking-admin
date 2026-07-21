@@ -10,17 +10,8 @@ const client = generateClient<Schema>();
 export default function Parkings() {
   const [parkings, setParkings] = useState<Parking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [buildingCode, setBuildingCode] = useState<string>('');
   const [buildingName, setBuildingName] = useState<string>('');
-  const [buildingNo, setBuildingNo] = useState<string>('');
-  const [formData, setFormData] = useState({
-    parkingName: '',
-    parkingNo: '',
-    parkingLots: 1,
-    description: '',
-  });
 
   useEffect(() => {
     loadData();
@@ -47,7 +38,6 @@ export default function Parkings() {
       });
       if (buildingsData.data[0]) {
         setBuildingName(buildingsData.data[0].buildingName);
-        setBuildingNo(buildingsData.data[0].buildingNo);
       }
 
       // Get Admin record to check assigned parkings using raw GraphQL
@@ -116,73 +106,6 @@ export default function Parkings() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const dataWithBuilding = {
-        ...formData,
-        buildingCode,
-        buildingName,
-        buildingNo,
-      };
-
-      if (editingId) {
-        await client.models.Parking.update({
-          id: editingId,
-          ...dataWithBuilding,
-        });
-        alert('✅ پارکینگ با موفقیت ویرایش شد');
-      } else {
-        await client.models.Parking.create(dataWithBuilding);
-        alert('✅ پارکینگ با موفقیت اضافه شد');
-      }
-
-      resetForm();
-      loadData();
-    } catch (error) {
-      console.error('Error saving parking:', error);
-      alert('❌ خطا در ذخیره پارکینگ');
-    }
-  };
-
-  const handleEdit = (parking: Parking) => {
-    setEditingId(parking.id);
-    setFormData({
-      parkingName: parking.parkingName || '',
-      parkingNo: parking.parkingNo,
-      parkingLots: parking.parkingLots || 1,
-      description: parking.description || '',
-    });
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id: string, parkingNo: string) => {
-    if (!confirm(`آیا از حذف پارکینگ "${parkingNo}" اطمینان دارید؟`)) {
-      return;
-    }
-
-    try {
-      await client.models.Parking.delete({ id });
-      alert('✅ پارکینگ با موفقیت حذف شد');
-      loadData();
-    } catch (error) {
-      console.error('Error deleting parking:', error);
-      alert('❌ خطا در حذف پارکینگ');
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      parkingName: '',
-      parkingNo: '',
-      parkingLots: 1,
-      description: '',
-    });
-    setEditingId(null);
-    setShowForm(false);
-  };
-
   const totalLots = parkings.reduce((sum, p) => sum + (p.parkingLots || 0), 0);
   const guestParkings = parkings.filter((p) =>
     p.parkingName?.toLowerCase().includes('guest')
@@ -201,100 +124,20 @@ export default function Parkings() {
     <div className="parkings-page">
       <div className="page-header">
         <div>
-          <h1>🅿️ Parkings Management - {buildingName}</h1>
+          <h1>🅿️ My Assigned Parkings - {buildingName}</h1>
           <p className="page-subtitle">
-            Building: <strong>{buildingCode}</strong> | {parkings.length} parking{parkings.length !== 1 ? 's' : ''}, {totalLots} spots
+            Building: <strong>{buildingCode}</strong> | {parkings.length} assigned parking{parkings.length !== 1 ? 's' : ''}, {totalLots} spots
+          </p>
+          <p className="info-message">
+            ℹ️ These are parkings assigned to you by Super Admin. You can view them but cannot add/edit/delete parkings.
           </p>
         </div>
-        <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-          {showForm ? '❌ Cancel' : '➕ Add Parking'}
+        <button className="btn-primary" onClick={loadData}>
+          🔄 Refresh
         </button>
       </div>
 
-      {showForm && (
-        <div className="form-card">
-          <h2>{editingId ? '📝 Edit Parking' : '➕ Add New Parking'}</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="form-grid">
-              <div className="form-group">
-                <label htmlFor="parkingNo">Parking Number *</label>
-                <input
-                  id="parkingNo"
-                  type="text"
-                  required
-                  value={formData.parkingNo}
-                  onChange={(e) => setFormData({ ...formData, parkingNo: e.target.value })}
-                  placeholder="P-101 or G-01"
-                  disabled={!!editingId}
-                />
-                <small>شماره پارکینگ (P-101 برای ساکنین، G-01 برای مهمان)</small>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="parkingName">Parking Name</label>
-                <input
-                  id="parkingName"
-                  type="text"
-                  value={formData.parkingName}
-                  onChange={(e) => setFormData({ ...formData, parkingName: e.target.value })}
-                  placeholder="Resident Parking or Guest Parking"
-                />
-                <small>نام پارکینگ (اختیاری)</small>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="parkingLots">Number of Spots *</label>
-                <input
-                  id="parkingLots"
-                  type="number"
-                  min="1"
-                  required
-                  value={formData.parkingLots}
-                  onChange={(e) =>
-                    setFormData({ ...formData, parkingLots: parseInt(e.target.value) })
-                  }
-                  placeholder="1"
-                />
-                <small>تعداد جاهای پارک</small>
-              </div>
-
-              <div className="form-group full-width">
-                <label htmlFor="description">Description</label>
-                <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Assigned to Unit 101 or Available for guest reservations"
-                  rows={3}
-                />
-                <small>توضیحات (اختیاری)</small>
-              </div>
-            </div>
-
-            <div className="parking-type-hint">
-              <h4>💡 نکات مهم:</h4>
-              <ul>
-                <li>
-                  <strong>Resident Parking:</strong> شماره با P- شروع شود (مثلا P-101، P-102)
-                </li>
-                <li>
-                  <strong>Guest Parking:</strong> شماره با G- شروع و نام شامل "Guest" باشد (مثلا G-01)
-                </li>
-                <li>پارکینگ های Guest برای رزرو عمومی در دسترس هستند</li>
-              </ul>
-            </div>
-
-            <div className="form-actions">
-              <button type="submit" className="btn-primary">
-                {editingId ? '💾 Save Changes' : '✅ Add Parking'}
-              </button>
-              <button type="button" className="btn-secondary" onClick={resetForm}>
-                ❌ Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      {/* Remove the form completely */}
 
       <div className="parking-stats">
         <div className="stat-item">
@@ -315,8 +158,8 @@ export default function Parkings() {
         {parkings.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">🅿️</div>
-            <h3>No parkings yet</h3>
-            <p>Click "Add Parking" to create your first parking space</p>
+            <h3>No parkings assigned</h3>
+            <p>Super Admin hasn't assigned any parkings to you yet</p>
           </div>
         ) : (
           <div className="parkings-grid">
@@ -363,16 +206,9 @@ export default function Parkings() {
                     )}
                   </div>
 
-                  <div className="parking-actions">
-                    <button className="btn-icon edit" onClick={() => handleEdit(parking)}>
-                      📝 Edit
-                    </button>
-                    <button
-                      className="btn-icon delete"
-                      onClick={() => handleDelete(parking.id, parking.parkingNo)}
-                    >
-                      🗑️ Delete
-                    </button>
+                  {/* Removed Edit and Delete buttons - Admin can only view */}
+                  <div className="parking-info">
+                    <small>ℹ️ Read-only: Only Super Admin can modify parkings</small>
                   </div>
                 </div>
               );
