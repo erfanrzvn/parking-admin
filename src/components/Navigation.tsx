@@ -6,9 +6,10 @@ interface NavigationProps {
   onNavigate: (page: string) => void;
   onSignOut: () => void;
   userEmail?: string;
+  userName?: string;
 }
 
-export default function Navigation({ currentPage, onNavigate, onSignOut, userEmail }: NavigationProps) {
+export default function Navigation({ currentPage, onNavigate, onSignOut, userEmail, userName }: NavigationProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const menuItems = [
@@ -48,11 +49,15 @@ export default function Navigation({ currentPage, onNavigate, onSignOut, userEma
 
       <div className="nav-footer">
         <div className="nav-user">
-          <span className="user-icon">👤</span>
-          <span className="user-email">{userEmail}</span>
+          <div className="user-avatar">👤</div>
+          <div className="user-info">
+            <div className="user-name">{userName || 'Admin'}</div>
+            <div className="user-email">{userEmail}</div>
+          </div>
         </div>
         <button className="nav-signout" onClick={onSignOut}>
-          🚪 Sign Out
+          <span className="signout-icon">🚪</span>
+          <span className="signout-text">Sign Out</span>
         </button>
       </div>
     </nav>

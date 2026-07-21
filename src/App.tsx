@@ -89,6 +89,7 @@ function App() {
         onNavigate={setCurrentPage}
         onSignOut={handleSignOut}
         userEmail={user?.signInDetails?.loginId || user?.username}
+        userName={user?.username || 'Admin'}
       />
       <main className="app-main">
         {renderPage()}
